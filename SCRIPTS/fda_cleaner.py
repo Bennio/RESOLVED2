@@ -4,6 +4,7 @@ Specifically extra trailling spaces and tabs.
 '''
 
 from utils import File_Reader as FR
+from utils import File_Maker as FM
 
 
 charstrip = "^[ ]+|[ ]+$"
@@ -17,6 +18,10 @@ for f in fda_file.iter():
 print(fda)
 
 
-with open("../FDA/FDA_DRUG_DATABASE_cured_cleaned.latest.txt", 'w', encoding = 'utf-8') as fp:
-	for i in fda:
-		fp.write("\t".join(i)+'\n')
+file = FM("../FDA/FDA_DRUG_DATABASE_cured_cleaned", data_stream = fda, extension = ".txt")
+file.save()
+
+
+# with open("../FDA/FDA_DRUG_DATABASE_cured_cleaned.latest.txt", 'w', encoding = 'utf-8') as fp:
+# 	for i in fda:
+# 		fp.write("\t".join(i)+'\n')

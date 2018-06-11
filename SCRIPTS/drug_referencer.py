@@ -3,6 +3,8 @@ Outputs a condendensed drug file from multiple .csv file inputs
 """
 
 from utils import File_Reader as FR
+from utils import File_Maker as FM
+
 
 
 # Readfiles
@@ -84,7 +86,9 @@ for i in final_ref:
 csv = list(set(csv))
 csv.sort()
 
+full_drug_list = FM("../DRUG_LISTS/full_drug_list", extension = ".txt")
 
-with open("../DRUG_LISTS/full_drug_list.latest.txt",'w', encoding = "utf-8") as fp:
+with full_drug_list.get_filepointer() as fp:
 	for drug in csv:
 		fp.write(drug+"\n")
+	fp.close()

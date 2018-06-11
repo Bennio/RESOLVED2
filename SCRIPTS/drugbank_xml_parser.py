@@ -8,6 +8,7 @@ import time
 import sys
 from utils import File_Reader as FR
 from utils import Task_Follower as TF
+from utils import File_Maker as FM
 
 
 def get_xpath(elem, keyword = "", returntodrug = True, path = ""):
@@ -90,7 +91,7 @@ pmid = []
 drugs_data = []
 
 
-drug_data_file = FR("../PUBMED_DATA/pubmedNdrugs_2.txt", sep = '\t', suppress_newlines = True, skiplines = 0, encoding = "utf-16")
+drug_data_file = FR("../PUBMED_DATA/pubmedNdrugs.latest.txt", sep = '\t', suppress_newlines = True, skiplines = 0, encoding = "utf-8")
 
 for line in drug_data_file.iter():
 	pmid.append(line[0])
@@ -155,7 +156,6 @@ elems = []
 start = time.time()
 for name,found in zip(real_names, res):
 	
-	tf.step()
 	if found:
 		elems.append(root.find(get_xpath("by_name", keyword = name)))
 		# elems.append(name)
@@ -164,6 +164,4 @@ for name,found in zip(real_names, res):
 duree = time.time() - start
 
 print("La recherche prend %.2f" % duree)
-
-print(elems[0:10])
 print(len(elems))
