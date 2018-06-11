@@ -1,4 +1,6 @@
 import xml.etree.ElementTree as ET
+from utils import File_Maker as FM
+
 # Parse xml file.
 print("parsing xml")
 tree = ET.parse('../DRUGBANK/drugbank_db_schema.xml')
@@ -14,9 +16,12 @@ def tree_builder(node,depth):
 
 tree_builder(root, 0)
 
-with open("../DRUGBANK/tree_tagging.txt", "w") as fp:
+tree_tagging = FM("../DRUGBANK/tree_tagging", extension = ".txt")
+
+with tree_tagging.get_filepointer() as fp:
 	for t in res:
 		fp.write(t+'\n')
+	fp.close()
 
 # def tree_builder(node):
 # 	children = []

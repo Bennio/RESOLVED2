@@ -1,9 +1,10 @@
 """
-
 Count drug occurences from input file. Format of said file should be checked.
 """
 
 from utils import File_Reader as FR
+from utils import File_Maker as FM
+
 
 file = FR("../PUBMED_DATA/pubmedNdrugs.latest.txt", sep = '\t', suppress_newlines = True, skiplines = 0, encoding = "utf-8")
 
@@ -29,6 +30,15 @@ s = sorted(counter.items(), key=lambda x: x[1])[::-1]
 
 print(s)
 
-with open("../PUBMED_DATA/drug_counter.latest.txt", 'w', encoding = "utf8") as fp:
-	for i in s:
-		fp.write(("\t".join([i[0],str(i[1])])+'\n'))
+save_file = FM("../PUBMED_DATA/drug_counter", extension = ".txt")
+
+fp = save_file.get_filepointer()
+for i in s:
+	fp.write(("\t".join([i[0],str(i[1])])+'\n'))
+fp.close()
+
+
+
+# with open("../PUBMED_DATA/drug_counter.latest.txt", 'w', encoding = "utf8") as fp:
+# 	for i in s:
+# 		fp.write(("\t".join([i[0],str(i[1])])+'\n'))
