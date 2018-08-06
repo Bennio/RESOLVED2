@@ -1,7 +1,7 @@
 setwd("RESOLVED²")
 require(ggplot2)
 
-miss = read.table(file = "PUBMED_DATA/pubmed_data_2606_noDRUG.txt", header = TRUE, as.is = TRUE, na.strings = "NA", sep = "\t")
+miss = read.table(file = "PUBMED_DATA/pubmed_data_2606_noDRUG.latest.txt", header = TRUE, as.is = TRUE, na.strings = "NA", sep = "\t")
 pubmed = read.table(file = "PUBMED_DATA/pubmed_data_2606.txt", as.is = TRUE)
 
 
@@ -85,7 +85,7 @@ ggplot(data=df5, aes(x=Var1, y=Freq)) +
 
 
 
-associations = read.table(file = "PUBMED_DATA/pubmedNdrugs_3.txt",
+associations = read.table(file = "PUBMED_DATA/pubmedNdrugs.latest.txt",
                        sep = "\t",
                        col.names = c("PMID","Year","Title", "DrugAlias"),
                        as.is = TRUE,
@@ -96,7 +96,7 @@ associations = read.table(file = "PUBMED_DATA/pubmedNdrugs_3.txt",
 
 
 
-citations = read.table(file = "PUBMED_DATA/drug_counter_2.txt",
+citations = read.table(file = "PUBMED_DATA/drug_counter.latest.txt",
                        sep = "\t",
                        encoding = "utf-8",
                        col.names = c("Drug Alias", "Citations in abstracts"),
