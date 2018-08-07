@@ -8,12 +8,19 @@ import datetime
 # Global vars
 def usage():
 	message = ['Descritption: Drugbank .xml mining tool by XPath queries supported by the ElementTree module of Python. Output is a pandas dataframe.',
+	'\tUsage: -d <drug_list> -x <query_list> -b <drugbank.xml_file> -o <save_file>',
+	'\tType --help for more details.']
+	for m in message:
+		notification(m)
+
+def help():
+	message = ['Descritption: Drugbank .xml mining tool by XPath queries supported by the ElementTree module of Python. Output is a pandas dataframe.',
 	'\tInput:',
 	'\t\t-d, --druglist: Path to file of Drugbank entities to query.',
 	'\t\t-b, --drugbank: Path to drugbank xml file. Namespacing in xml file may mess up the parsing.',
 	'\t\t-x, --query_file: Path to file of queries.',
 	'\tOptions:',
-	'\t\t-o, --out: Name of save file. If not supplied, the result can be redirected, but some may cause issues with encoding and windows.',
+	'\t\t-o, --out: Name of save file. If not supplied, the result can be redirected, but some may trigger issues with encoding and windows.',
 	'\t\t-D, --drugs: Manually supply a \"'+COMMAND_LINE_SEP+'\" seperated list of entities to query.',
 	# '\t\t-O, --old_dir: Directory of archived files.',
 	'\t\t-Q, --Query: Manually supply a \"'+COMMAND_LINE_SEP+'\" seperated query.',
@@ -35,7 +42,6 @@ def usage():
 	'\t\t\tFILENAME: Filename of individual dataframe. Also used to distinguish columns for the final dataframe.',
 	'\t\t\tBY_QUERY: Second XPath for cross mode.',
 	'']
-# A query is tab seperated and has the following format: XPATH, MODE, FILENAME, BY_QUERY
 	for m in message:
 		notification(m)
 
@@ -70,8 +76,11 @@ def parseArgs(argv):
 		sys.exit(2)
 
 	for opt, arg in opts:
-		if opt in ('-h', '--help'):
+		if opt in ('-h'):
 			usage()
+			sys.exit(2)
+		elif opt in ('--help'):
+			help()
 			sys.exit(2)
 		elif opt in ('-d', '--druglist'):
 			DRUG_LIST_FILE = arg
@@ -130,10 +139,12 @@ SAVE_FILE = ""
 ENCODING = "utf-8"
 
 COMMAND_LINE_SEP = ";"
-XP_MANUAL = ""
-MODE_MANNUAL = ""
-FILENAME_MANNUAL = ""
-BY_QUERY_MANNUAL = ""
+
+NEW_LINE_REPLACE = '&#13;'
+# XP_MANUAL = ""
+# MODE_MANNUAL = ""
+# FILENAME_MANNUAL = ""
+# BY_QUERY_MANNUAL = ""
 
 # Adding classes from utils module to avoid dependency
 
@@ -486,6 +497,41 @@ def notification(message, quiet = False, suppress_newline = False):
 
 
 # LOCAL FUNCITONS
+def strip_newline(s, strip = NEW_LINE_REPLACE):
+	while '\r\n' in s:
+		s = s.replace('\r\n', NEW_LINE_REPLACE)
+	while '\n' in s:
+		s = s.replace('\n', NEW_LINE_REPLACE)
+	return s
+
+
+def nested_dict_to_list(df, header = [],
+	infer_header = False, first_col_is_not_data = True, keep_colnames = True, metadata = ()):
+	
+	to_save = []
+	cols = set()
+	if infer_header:
+		for nested_key in df.keys():
+			for k in df[nested_key].keys():
+				cols.add(k)
+		header = sorted(list(cols)) 
+
+	if header and keep_colnames:
+		if first_col_is_not_data:
+			to_save.append(['']+header)
+		else:
+			to_save.append(header)
+	
+
+	for nested_key in df.keys():
+		line = []
+		line.append(nested_key)
+		for head in header:
+			line.append(str(df[nested_key][head]))
+		to_save.append(line)
+
+	return to_save
+
 def invertdict(df, cols):
 	res = {}
 	keys = []
@@ -546,10 +592,11 @@ def gen_result_dataframe(command, query_list,
 				df[key][altered[col_names.index(c)]] = df[key].pop(c)
 		col_names = altered
 
-	if auto_save:
+	if AUTO_SAVE:
 		if not file_name:
 			file_name = "_".join(xpath.split("/")[2:])
 		file_name = "drugbank_mining_"+file_name
+		notification("Saving at "+file_name, QUEIT)
 		fmt = "" if mode=="fasta" else "tsv"
 		save_file = File_Maker(SAVE_DIRECTORY+file_name,
 			extension = ".txt", format = fmt, olddata_dir = OLD_SAVE_DIRECTORY)
@@ -560,7 +607,11 @@ def gen_result_dataframe(command, query_list,
 		save_file.close()
 
 	i = invertdict(df, col_names)
-
+	dff = pd.DataFrame(i)
+	dff = dff.replace('\n','', regex=True)
+	dff = dff.replace('\\n','', regex=True)
+	dff = dff.replace('\r\n','', regex=True)
+	dff = dff.replace('\\r\\n','', regex=True)
 	return pd.DataFrame(i)
 
 def fasta_mode(xpath,query_list):
@@ -591,7 +642,6 @@ def fasta_mode(xpath,query_list):
 				df[query][res] = '\n'
 	return df,col_names
 
-
 def listed_mode(xpath,query_list):
 	df = {}
 	col_names = set()
@@ -607,6 +657,7 @@ def listed_mode(xpath,query_list):
 			df[query][key] = ""
 			for res in [elem.text for elem in root.findall(x)]:
 				if res:
+					res = strip_newline(res)
 					df[query][key] = res if not df[query][key] else ";".join([df[query][key], res])
 					col_names.add(key)
 	col_names = list(col_names)
@@ -635,6 +686,7 @@ def crossed_mode(xpath_cross,query_list):
 		for res in [elem.text for elem in root.findall(xp)]:
 			if res:
 				c = prepared_XP(cr, res, spliter = QUERY_SPLITTER_2)
+				res = strip_newline(res)
 				df[query][res] = ";".join([elem.text for elem in root.findall(c)])
 				col_names.add(res)
 				# print(res)
@@ -663,6 +715,7 @@ def tabled_mode(xpath,query_list):
 
 		for res in [elem.text for elem in root.findall(xp)]:
 			if res:
+				res = strip_newline(res)
 				df[query][res] = 1
 				col_names.add(res)
 

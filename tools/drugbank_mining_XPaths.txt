@@ -1,7 +1,7 @@
 QUERYS	MODE	FILENAME	BY_QUERY
 ./drug[name="*Query*"]/categories/category/category	tabled	category	
 ./drug[name="*Query*"]/targets/target/name	tabled	targets	
-./drug[name="*Query*"]/half-life;./drug[name="*Query*"]/protein-binding;./drug[name="*Query*"]/route-of-elimination;./drug[name="*Query*"]/volume-of-distribution;./drug[name="*Query*"]/clearance	listed	PK	
+./drug[name="*Query*"]/half-life;./drug[name="*Query*"]/protein-binding;./drug[ame="*Query*"]/route-of-elimination;./drug[#name="*Query*"]/volume-of-distribution;./drug[name="*Query*"]/clearance	listed	PK	
 ./drug[name="*Query*"]/enzymes/enzyme/name	tabled	enzymes	
 ./drug[name="*Query*"]/transporters/transporter/name	tabled	transporters	
 ./drug[name="*Query*"]/carriers/carrier/name	tabled	carriers	
