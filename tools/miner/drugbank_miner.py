@@ -17,7 +17,7 @@ def help():
 	message = ['Descritption: Drugbank .xml mining tool by XPath queries supported by the ElementTree module of Python. Output is a pandas dataframe.',
 	'\tInput:',
 	'\t\t-d, --druglist: Path to file of Drugbank entities to query.',
-	'\t\t-b, --drugbank: Path to drugbank xml file. Namespacing in xml file may mess up the parsing.',
+	'\t\t-b, --drugbank: Path to drugbank xml file. Namespacing in xml file may mess up the parsing. The Drugbank database is availible at https://www.drugbank.ca/releases/latest. This download will have namespacing :(.',
 	'\t\t-x, --query_file: Path to file of queries.',
 	'\tOptions:',
 	'\t\t-o, --out: Name of save file. If not supplied, the result can be redirected, but some may trigger issues with encoding and windows.',
@@ -260,7 +260,7 @@ class File_Reader():
 		for line in lines:
 			n = next(gen)
 			for i in range(len(line)):
-				ret[header[i]] = line[i]
+				ret[header[i]].append(line[i])
 		if ret_header:
 			return ret,header
 		else:
