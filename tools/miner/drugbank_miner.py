@@ -140,7 +140,7 @@ ENCODING = "utf-8"
 
 COMMAND_LINE_SEP = ";"
 
-NEW_LINE_REPLACE = '&#13;'
+CR_NL_REPLACE = '&#13;'
 # XP_MANUAL = ""
 # MODE_MANNUAL = ""
 # FILENAME_MANNUAL = ""
@@ -265,9 +265,6 @@ class File_Reader():
 			return ret,header
 		else:
 			return ret
-
-
-
 
 class Task_Follower():
 	"""Mini barre de progression en pourcentage pour les executions linéaire longues.
@@ -464,11 +461,11 @@ class File_Maker():
 			
 		os.chdir(self.current_script_dir)
 
+# Utility Funcitons
 
 def head(l, start = 0, stop = 5):
 	"""Equivalent de l'outil linux head."""
 	print(l[start:stop])
-
 
 def qprint(message, quiet):
 	if not quiet:
@@ -492,18 +489,13 @@ def notification(message, quiet = False, suppress_newline = False):
 		sys.stderr.flush()
 
 
-
-
-
-
-# LOCAL FUNCITONS
-def strip_newline(s, strip = NEW_LINE_REPLACE):
+# Local Functions
+def strip_newline(s, strip = CR_NL_REPLACE):
 	while '\r\n' in s:
-		s = s.replace('\r\n', NEW_LINE_REPLACE)
+		s = s.replace('\r\n', CR_NL_REPLACE)
 	while '\n' in s:
-		s = s.replace('\n', NEW_LINE_REPLACE)
+		s = s.replace('\n', CR_NL_REPLACE)
 	return s
-
 
 def nested_dict_to_list(df, header = [],
 	infer_header = False, first_col_is_not_data = True, keep_colnames = True, metadata = ()):
@@ -607,11 +599,6 @@ def gen_result_dataframe(command, query_list,
 		save_file.close()
 
 	i = invertdict(df, col_names)
-	dff = pd.DataFrame(i)
-	dff = dff.replace('\n','', regex=True)
-	dff = dff.replace('\\n','', regex=True)
-	dff = dff.replace('\r\n','', regex=True)
-	dff = dff.replace('\\r\\n','', regex=True)
 	return pd.DataFrame(i)
 
 def fasta_mode(xpath,query_list):
