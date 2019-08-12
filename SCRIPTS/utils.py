@@ -1,37 +1,43 @@
 import sys
 import re
 import os
+import datetime as dt
+
 
 class File_Reader():
-	"""Classe de lecture de fichiers text simples (txt, csv, tsv...).
+	"""Wrapper class for simple standard file reader (txt, csv, tsv...) with in-built generator.
 	
-	:param file_name: chemin du fichier à lire
-	:param sep: séparateur de champ, aucun par defaut. En cas de separateur, chaque ligne sera une liste python avec un element pour chaque champ
-	:param suppress_newlines: si on veut enlever les \n à la fin de chaque ligne, vrai par defaut
-	:param skiplines: nombre de lignes à ignorer en début de fichier, 0 par defaut
-	:param strip_chars_pattern: expression reguliere pour enlever certains caracteres ou expressions (ex: expace en debut de ligne), auncune par defaut
-	:param encoding: l'encodage du fichier, par defaut utf8
+	:param file_name: path to file
+	:param sep: field seperator, none by default.
+	:param suppress_newlines: Deletes \n at the end of every line, True by default
+	:param skiplines: number of lines to skip, 0 by default
+	:param strip_chars_pattern: regular expression for pattern deleting, none by default
+	:param encoding: file encoding, utf8 by default
 
 	:example:
 
-	#Initialiser avec le chemin du fichier et les parametres voulus
-	my_file = File_Reader("chemin/vers/lefichier/")
-	#lecture ligne par ligne
+	#Init
+	my_file = File_Reader("path/to/file")
+	#Read line by line
 	for line in my_file.iter():
 		do_something(line)
-	#OU recuperation de chaque ligne dans une liste
-	all_lines = my_file.readlines()
-	#Une fois le fichier parcouru, il faut reutiliser cette classe si l'on veut relire le fichier.
+
+	my_file2 = File_Reader("path/to/file")
+	#Get all lines in a python list
+	all_lines = my_file2.readlines()
 	"""
-	def __init__(self, file_name, sep = "", suppress_newlines = True, skiplines = 0, strip_chars_pattern = "", encoding = ""):
+	def __init__(self, file_name, sep = "",
+		suppress_newlines = True, skiplines = 0,
+		strip_chars_pattern = "", encoding = "",
+		comment_char = "#"):
+
 		self.file_name = file_name
 		self.sep = sep
 		self.suppress_newlines = suppress_newlines
 		self.skiplines = skiplines
 		self.strip_chars_pattern = strip_chars_pattern
-		self.encoding = "utf-8"
-		if encoding:
-			self.encoding = encoding
+		self.encoding = encoding if encoding else "utf-8"
+		self.comment_char = comment_char
 
 	def char_strip(self,string, pattern):
 		return re.sub(pattern, '', string)
@@ -46,6 +52,13 @@ class File_Reader():
 
 		while self.line:
 			
+			if self.comment_char:
+				while self.line[0:len(self.comment_char)]==self.comment_char:
+					self.line = self.fp.readline()
+				if not self.line:
+					break
+
+
 			if self.suppress_newlines:
 				self.line = self.line[:-1]
 
@@ -69,6 +82,48 @@ class File_Reader():
 			text.append(self.line)
 		return(text)
 
+	def as_dict(self, header = "", key_column = 0, lines_askeys = False, ret_header = False):
+		lines = self.readlines()
+		ret = {}
+		gen = (l for l in range(0,len(lines)))
+		if not header:
+			header = lines.pop(0)
+		for line in lines:
+			n = next(gen)
+			if not lines_askeys:
+				ret[line[key_column]] = {}
+			else:
+				ret[n] = {}
+
+			for i in range(len(header)):
+				if not lines_askeys:
+					ret[line[key_column]][header[i]] = line[i]
+				else:
+					ret[n][header[i]] = line[i]
+		if ret_header:
+			return ret,header
+		else:
+			return ret
+
+	def as_pandas_dict(self, header = "", ret_header = False):
+		lines = self.readlines()
+		ret = {}
+		gen = (l for l in range(0,len(lines)))
+		if not header:
+			header = lines.pop(0)
+		for h in header:
+			ret[h] = []
+		for line in lines:
+			n = next(gen)
+			for i in range(len(line)):
+				ret[header[i]] = line[i]
+		if ret_header:
+			return ret,header
+		else:
+			return ret
+
+
+
 
 class Task_Follower():
 	"""Mini barre de progression en pourcentage pour les executions linéaire longues.
@@ -76,56 +131,109 @@ class Task_Follower():
 	#initialiser avec le nombre d'opérations
 	t = Task_Follower(count)
 	#incrémenter l'avencement
-	t.step()"""
-	def __init__(self, taskcount, message = "Completion: "):
-		self.taskcount = taskcount
+	t.step()
+	"""
+	def __init__(self, taskcount, message = "Completion: ", quiet = False):
+		self.taskcount = taskcount-1
 		self.done = 0
 		self.message = message
 		self.gen = self.ini()
+		self.quiet = quiet
 
 	def ini(self):
 		return self.next()
 
 	def step(self):
-		sys.stdout.write(next(self.gen))
-		sys.stdout.flush()
+		notification(next(self.gen), quiet)
+		if self.taskcount <= self.done:
+			notification('\n', quiet)
 
 	def next(self):
 		while self.done < self.taskcount+1:
-			yield str(self.message + "%.2f \r" % (100*self.done/self.taskcount))
+			yield str('\r'+self.message + "%.2f" % (100*self.done/self.taskcount))
 			self.done+=1
-		while True:
-			yield "Task Done\r"
-
-
-def head(l, start = 0, stop = 5):
-	"""Equivalent de l'outil linux head."""
-	print(l[start:stop])
-
+		# while True:
+		# 	yield "Task Done!\n"
+		return("\nTask Done")
 
 class File_Maker():
-	def __init__(self, path, replace_old = False, olddata_dir = "", version_control = True, encoding = "utf-8", mode = "w", latest_string = "latest"):
-		
+	'''Wrapper class for simple file writting with version control. Auto-renaming of files to keep old files.
+	The last file will be tagged .latest (by default) et previous versions with a number (.1, .2, .3, etc).
+	The current working directory is the directory where the file is being saved.
+
+	:param path: path to save file WITHOUT extension and NO tags. Supply the extension in parameters. 
+	:param data_stream: If not empty, will be written to the file with the save() method.
+	:param format: define the field separator for save() method. By default "". Other supported formats are csv, tsv et "".
+	:param extension: extension of save file. If none given, it will be infered with the path name or the format.
+	:param encoding: file encoding.
+	:param latest_string: Last version annotation tag. ".latest" by default.
+	:param olddata_dir: If given, path to directory where current ".latest" version will be moved. Number tags
+	will be added as needed.
+
+	:example:
+
+	from utils import File_Maker as FM
+
+	data = [["This", "is"], "my", 'data']
+	
+	# Init
+	# Moving and renaming old files is only done when save() or get_filepointer() are called.
+	save_file = FM("../test", data_stream = data, extension = ".txt", olddata_dir = "../OLD_DATA/") 
+
+	# Writting data in ../test.latest.txt
+	save_file.save()
+
+	# Get the file pointer for further operations.	
+	with save_file.get_filepointer() as fp:
+		fp.write("adzaf")
+		fp.write("sth")
+		fp.write("rthter")
+		fp.write("rthet")
+		fp.close()
+	# File pointer disapears when close() is called.
+	'''
+	def __init__(self, path, data_stream = "", format = "tsv", extension = "", encoding = "utf-8",
+	latest_string = ".latest", olddata_dir = ""):
+	
 		self.path = path
+		
 		self.file_name = self.get_filename()
-		self.extension = self.get_extension()
-		self.save_dir = self.get_savedir()
-		self.olddata_dir = olddata_dir
 
-		self.replace_old = replace_old
-		self.version_control = version_control
+		self.extension = extension
+		if not extension:
+			self.extension = self.get_extension()
+			if not self.extension:
+				self.extension = "."+format
 
-		self.mode = mode
+		self.olddata_dir = os.path.abspath(olddata_dir)
+		self.current_script_dir = os.getcwd()
+
+		self.set_savedir()
+
+		# self.replace_old = replace_old
+		# self.version_control = version_control
+
+		self.mode = "w"
 		self.encoding = encoding
+
+		if self.mode is not 'a' and self.mode is not 'w':
+			notification("Warning, file oppening mode is not supported.")
 
 		
 		self.fp = None
+		self.data_stream = data_stream
 
-		self.original_dir = os.getcwd()
+		self.format = format
 
+		self.format_dict = {
+		"tsv":'\t',
+		"csv":';',
+		"":""
+		}
 
-	# def setcwd(self, dir):
-	# 	os.chdir(dir)
+		self.sep = self.format_dict[format]
+		self.latest_string = latest_string
+
 
 	def get_filename(self):
 		name = (self.path.split("/")[-1])
@@ -143,24 +251,94 @@ class File_Maker():
 			return "."+ext
 		return ""
 
-	def get_savedir(self):
-		sd = "/".join(self.path.split("/")[0:-1])
-		return sd
+	def set_datastream(self, data_stream):
+		self.data_stream = data_stream
 
+	def set_savedir(self):
+		sd_path = self.path.split("/")[0:-1]
+		if len(sd_path) is not 0:
+			os.chdir("/".join(sd_path))
 
 	def get_filepointer(self):
-		# self.setcwd(self.original_dir)
-		# self.setcwd(self.save_dir)
-		if self.replace_old and not self.version_control:
-			self.fp = open(self.file_name+self.extension, self.mode, encoding = self.encoding)
+		if self.fp:
 			return self.fp
 
-		if not self.replace_old and self.version_control:
-			self.fp = open(self.file_name, self.mode, encoding = self.encoding)
-			return self.fp
+		save_name = self.file_name+self.latest_string+self.extension
+
+		if not self.olddata_dir:
+			files = [f for f in os.listdir() if os.path.isfile(f)]
+
+			if save_name in files:
+				i = 1
+				rename = save_name
+				while rename in files:
+					rename = self.file_name+"."+str(i)+self.extension
+					i+=1
+				os.rename(save_name, rename)
+
+		else:
+			dest_files = [f for f in os.listdir(self.olddata_dir) if os.path.isfile(os.path.join(self.olddata_dir,f))]
+			local_files = [f for f in os.listdir() if os.path.isfile(f)]	
+
+			if save_name in local_files:
+				i = 1
+				rename = self.file_name+"."+str(i)+self.extension
+				while rename in dest_files:
+					rename = self.file_name+"."+str(i)+self.extension
+					i+=1
+				new_path = os.path.join(self.olddata_dir,rename)
+				os.rename(save_name, new_path)
+
+		self.fp = open(save_name, self.mode, encoding = self.encoding)
+		return self.fp
 
 
+	def save(self):
+ 
+		if not self.fp:
+			self.fp = self.get_filepointer()
+
+		if self.data_stream and self.fp:
+			for i in self.data_stream:
+				if type(i) is not str:
+					self.fp.write(self.sep.join(i)+'\n')
+				else:
+					self.fp.write(i+'\n')
+
+		else:
+			notification("Missing/Incorrect data_stream or no file to write to.\n")
+
+		os.chdir(self.current_script_dir)
+		
 
 	def close(self):
 		if self.fp:
-			self.fp.close
+			self.fp.close()
+			self.fp = None
+		else:
+			notification("Can't close undefined file pointer.\n")
+			
+		os.chdir(self.current_script_dir)
+
+
+def head(l, start = 0, stop = 5):
+	"""Equivalent de l'outil linux head."""
+	print(l[start:stop])
+
+
+def qprint(message, quiet):
+	if not quiet:
+		print(message)
+
+def qsys_out(message, quiet):
+	if not quiet:
+		sys.stdout.write(message)
+		sys.stdout.flush()
+
+def notification(message, quiet = False, suppress_newline = False):
+	message = str(message)
+	if not suppress_newline and message[-1]!='\n':
+		message+='\n'
+	if not quiet:
+		sys.stderr.write(message)
+		sys.stderr.flush()

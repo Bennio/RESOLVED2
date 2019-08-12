@@ -4,6 +4,7 @@ Needs work
 
 import utils
 from utils import File_Reader as FR
+from utils import File_Maker as FM
 from utils import Task_Follower as TF
 import random
 import re
@@ -66,6 +67,15 @@ for k,v in match.items():
 
 print(missing)
 
+
+pubmedNdrugs = FM("../PUBMED_DATA/pubmedNdrugs", extension = ".txt")
+with pubmedNdrugs.get_filepointer() as fp:
+	for k,v in match.items():
+		if v[2]:
+			fp.write("\t".join([str(k),v[0], v[1],v[2][0]])+"\n")
+		else:
+			fp.write("\t".join([str(k),v[0], v[1],""])+"\n")
+	fp.close()
 # with open("../PUBMED_DATA/pubmedNdrugs.latest.txt", "w", encoding = "utf-8") as fp:
 # 	for k,v in match.items():
 # 		if v[2]:
@@ -74,31 +84,36 @@ print(missing)
 # 			fp.write("\t".join([str(k),v[0], v[1],""])+"\n")
 
 
-#### Missing
-with open("../PUBMED_DATA/pubmed_data_2606_noDRUG_4.txt", "w", encoding = "utf-8") as fp:
+noDrug = FM("../PUBMED_DATA/pubmed_data_2606_noDRUG", extension = ".txt")
+with noDrug.get_filepointer() as fp:
 	for k,v in match.items():
 		if v == ("","",[],""):
 			fp.write(str(k)+"\n")
+	fp.close()
+# #### Missing
+# with open("../PUBMED_DATA/pubmed_data_2606_noDRUG_4.txt", "w", encoding = "utf-8") as fp:
+# 	for k,v in match.items():
+# 		if v == ("","",[],""):
+# 			fp.write(str(k)+"\n")
 
 
 
 # #### Positive control generator
 
 
-# pop = list(range(0,2606-missing))
-# samp1 = random.sample(pop, 40)
-# samp2 = random.sample(pop, 40)
-# samp3 = random.sample(pop, 40)
+pop = list(range(0,2606-missing))
+samp1 = random.sample(pop, 40)
+samp2 = random.sample(pop, 40)
+samp3 = random.sample(pop, 40)
 
-# no_miss = match.copy()
-# del_keys = []
-# for k,v in no_miss.items():
-# 	if v==("","",[],""):
-# 		del_keys.append(k)
+no_miss = match.copy()
+del_keys = []
+for k,v in no_miss.items():
+	if v==("","",[],""):
+		del_keys.append(k)
 
-# for k in del_keys:
-# 	del no_miss[k]
-
+for k in del_keys:
+	del no_miss[k]
 
 # with open("../PUBMED_DATA/positiveControl_1.txt", "w", encoding = "utf-8") as fp:
 

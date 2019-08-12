@@ -1,0 +1,63 @@
+Organisation:
+
+\DOSSIER
+
+-Nom de table: description et format
+HEADER1	HEADER2	ETC	(Si format tsv ou csv)
+
+======================================================
+
+
+DRUG_LISTS
+
+-full_drug_list.latest.txt: csv d'alias de médicaments, un médicament par ligne. Condensé des tbl suivantes.
+
+-tbl_Abst_drug_LIST_noSYMBOLS 2018 05 17.txt: tsv de médicaments
+DRUG_LIST_NO_SYMBOL_CURED
+
+-tbl_Abst_drug_LIST_SUPP 2018 05 31.txt: tsv de médicaments
+DRUG_OCCURENCE	corresponding_TITLE_DRUG_NAME	DRUG_NAME_NCI
+
+
+-tbl_Abst_drug_vs_symbols_match - DRUG_LIST 2018 05 17.txt: tsv de médicaments
+drug_list	DRUG_LIST
+
+
+-tbl_Abst_drug_vs_symbols_match - DRUG_MATCH 2018 05 27.txt: tsv de médicaments
+NCI_DRUG_NAME	NCI_code_name	NCI DRUG DICTIONNARY MATCH OR DRUG NAME
+
+
+\DRUGBANK
+
+
+-drugbank.xsd: fichier de définition du schéma de la base de données xml de drugbank. Format xml.
+
+-drugbank_db.xml: database de DrugBank sans le namespace (fichier de travail).
+
+-drugbank_db_original.xml: database de DrugBank non modifiée (avec namespace), téléchargée de drugbank.
+
+-drugbank_db_schema.xml: schema complet des tags de la base de donnée. Equivalent à drugbank.xsd.
+
+-tree_tagging.txt: Extraction des noms des tags sous forme d'arbre pour la compréhension.
+
+
+\FDA
+
+
+-FDA_DRUG_DATABASE_cured_cleaned.latest.txt: tsv de FDA nettoyée.
+years	drug	industry	indication	date
+
+
+\PUBMED_DATA
+
+-drug_counter.latest.txt: tsv de nombre de citation par médicament
+DRUG_ALIAS	count
+
+-pubmed_data_2606.txt: tsv (façon R -> Attention à la première colonne), 2606 abstract de phase 1. Sert de base pour tous les fichiers du dossier.
+"PMID"	"Journal"	"Year_publication"	"Month_publication"	"Title"	"Abstract"
+
+-pubmed_data_2606_noDRUG.latest.txt: list de PMID dont les abstracts ne matchent pas avec un médicament.
+PMID
+
+-pubmedNdrugs.latest.txt: tsv d'association pubmed_data_2606.txt et full_drug_list.latest.txt
+PMID	Year_publication	Title	DRUG
