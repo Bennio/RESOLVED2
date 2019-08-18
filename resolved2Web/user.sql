@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Aug 12, 2019 at 11:22 AM
+-- Generation Time: Aug 18, 2019 at 01:12 PM
 -- Server version: 5.7.26
 -- PHP Version: 7.2.18
 
@@ -31,6 +31,7 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE IF NOT EXISTS `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `drugName` text NOT NULL,
   `v1` float DEFAULT NULL,
   `v2` float DEFAULT NULL,
   `v3` float DEFAULT NULL,
@@ -62,11 +63,12 @@ CREATE TABLE IF NOT EXISTS `user` (
   `hasResults` int(11) DEFAULT NULL,
   `oldResults` float DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=55 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=56 DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `user`
 --
+
 
 COMMIT;
 
