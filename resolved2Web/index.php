@@ -29,12 +29,12 @@
 					trials, by increasing the likelihood of routine use of treatment from 5% to 73%. 
 					A prospective evaluation is planned to confirm the usefulness of routine use of RESOLVED2.
 				</h6>
+				<img src="img/fig.png" style="width:100%; "/>
 			</div>
 			
 			<div class="card-body">
 				
 				<form action="" method="POST">	
-				
 					<table class="table table-striped">
 						<thead>
 							<tr>
@@ -43,6 +43,18 @@
 								</th>
 							</tr>
 						</thead>
+					</table>
+					<table class="table table-striped">
+						<tbody>
+							<tr>						
+							<td>The treatment's name</td>
+							<td>
+								<input type="text" required="required" name="name" class="form-control" id="name" aria-describedby="TreatmentName" style="width:100%;">
+							</td>							
+							</tr>
+						</tbody>
+					</table>
+					<table class="table table-striped">
 						<tbody>
 							<tr>						
 							<td id="v1">Did this study include patients with an enrichment in a specific tumor type?</td>
@@ -535,7 +547,7 @@
 							</td>
 							<td scope="col">
 								<input class="form-check-input" type="radio" name="checkRes" id="noId" value="No" 
-								onchange="getElementById('userResults').setAttribute('placeholder','When did the approval procedure start?');
+								onchange="getElementById('userResults').setAttribute('placeholder','When did the clinical trials start?');
 										  getElementById('userResults').disabled=false;">
 								<label class="form-check-label" for="noId">
 								<h6>No</h6>
@@ -622,7 +634,8 @@
 								$r=0;
 								if (isset($_POST['oldResults'])) $r=$_POST['oldResults']; 
 								if ($_POST['checkRes'] == 'Yes') $b=1; if ($_POST['checkRes'] == 'No') $b=0;
-
+								
+								$d=$_POST['name'];
 								//Récuperation des données
 								$t = array();
 								for ($j=0;$j<28;$j++){
@@ -647,14 +660,14 @@
 								echo "<h5>The drug will be approved in ".($result%100)." years.</h5>";
 
 								//insertion dans la BDD
-								$valeurs = ['v1'=>$t[0], 'v2'=>$t[1], 'v3'=>$t[2], 'v4'=>$t[3], 'v5'=>$t[4], 'v6'=>$t[5], 'v7'=>$t[6],
+								$valeurs = ['drugName'=>$d, 'v1'=>$t[0], 'v2'=>$t[1], 'v3'=>$t[2], 'v4'=>$t[3], 'v5'=>$t[4], 'v6'=>$t[5], 'v7'=>$t[6],
 											'v8'=>$t[7], 'v9'=>$t[8], 'v10'=>$t[9], 'v11'=>$t[10], 'v12'=>$t[11], 'v13'=>$t[12],
 											'v14'=>$t[13], 'v15'=>$t[14], 'v16'=>$t[15], 'v17'=>$t[16], 'v18'=>$t[17], 'v19'=>$t[18],
 											'v20'=>$t[19], 'v21'=>$t[20], 'v22'=>$t[21], 'v23'=>$t[22], 'v24'=>$t[23], 'v25'=>$t[24],
 											'v26'=>$t[25], 'v27'=>$t[26], 'v28'=>$t[27], 'hasResults'=>$b, 'oldResults'=> $r];
 
-								$sql = 'INSERT INTO user (v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, hasResults, oldResults) 
-												VALUES (:v1, :v2, :v3, :v4, :v5, :v6, :v7, :v8, :v9, :v10, :v11, :v12, :v13, :v14, :v15, :v16, :v17, :v18, :v19, :v20, :v21, :v22, :v23, :v24, :v25, :v26, :v27, :v28, :hasResults, :oldResults)';
+								$sql = 'INSERT INTO user (drugName, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, hasResults, oldResults) 
+												VALUES (:drugName, :v1, :v2, :v3, :v4, :v5, :v6, :v7, :v8, :v9, :v10, :v11, :v12, :v13, :v14, :v15, :v16, :v17, :v18, :v19, :v20, :v21, :v22, :v23, :v24, :v25, :v26, :v27, :v28, :hasResults, :oldResults)';
 
 								
 								$sql_preparee = $pdo->prepare($sql);
