@@ -657,8 +657,10 @@
 									$result+=$t[$i]*$c[$i];
 								}
 								
-								echo "<h5>The drug will be approved in ".($result%100)." years.</h5>";
-
+								if ($result>4.553632)								
+									echo "<h5>The drug belongs to the second group. 92% of the drugs that are in this group are still not approved at 6 years.</h5>";
+								else echo "<h5>The drug belongs to the first group. 73% of the drugs that are in this group are approved at 6 years.</h5>";
+							
 								//insertion dans la BDD
 								$valeurs = ['drugName'=>$d, 'v1'=>$t[0], 'v2'=>$t[1], 'v3'=>$t[2], 'v4'=>$t[3], 'v5'=>$t[4], 'v6'=>$t[5], 'v7'=>$t[6],
 											'v8'=>$t[7], 'v9'=>$t[8], 'v10'=>$t[9], 'v11'=>$t[10], 'v12'=>$t[11], 'v13'=>$t[12],
