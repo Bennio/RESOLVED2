@@ -17,13 +17,12 @@
 				<h3>RESOLVED2</h3>
 				<h6>
 					The development of a cancer drug is currently long, costly and requires the involvement of 
-					several thousand patients. Yet only 5% of these drugs will be effective enough to be 
-					approved for cancer treatment.</br>
+					several thousand patients. Yet only 5% of these drugs will be approved for cancer treatment.</br>
 					RESOLVED2 is a machine-learning method that predicts the approval of a drug at the end of 
 					a Phase I clinical trial. Phase I clinical studies are very early in the development of 
 					a drug, and RESOLVED2 requires an average of only 30 patients to make predictions. When 
-					RESOLVED2 predicts that a treatment will be approved, 73% of the treatments are actually 
-					approved within 6 years, and the rest in subsequent years.</br>
+					RESOLVED2 predicts that a treatment will be approved, 73% of the treatments are indeed 
+					approved within 6 years, while the others are during the subsequent years</br>
 					RESOLVED2 is also correct for 92% of treatments that will not be approved in 6 years. 
 					RESOLVED2 has the potential to reduce the number of patients to be included in clinical 
 					trials, by increasing the likelihood of routine use of treatment from 5% to 73%. 
